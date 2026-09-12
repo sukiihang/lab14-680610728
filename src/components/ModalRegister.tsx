@@ -1,5 +1,15 @@
 import { useState } from "react";
+import type { Registrant } from "../libs/Registrant";
 
+type RegisterForm = {
+  fname: string;
+  lname: string;
+  plan: string;
+  gender: string;
+  extraItems: string[];
+};
+
+//---- แผนการวิ่ง ----
 const plans = [
   { id: "funrun", label: "Fun run 5.5 Km", price: 500 },
   { id: "mini", label: "Mini Marathon 10 Km", price: 800 },
@@ -7,184 +17,200 @@ const plans = [
   { id: "full", label: "Full Marathon 42.195 Km", price: 1500 },
 ];
 
-export default function ModalRegister() {
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
-  const [plan, setPlan] = useState("");
-  const [gender, setGender] = useState("");
-  const [bottle, setBottle] = useState(false);
-  const [shoes, setShoes] = useState(false);
-  const [cap, setCap] = useState(false);
-  const [agreed, setAgreed] = useState(false);
-  const [showErrors, setShowErrors] = useState(false);
+// ---- สินค้าเสริม ----
+const extraItems = [
+  { id: "bottle", label: "Bottle 🍼", price: 200 },
+  { id: "shoes", label: "Shoes 👟", price: 600 },
+  { id: "cap", label: "Cap 🧢", price: 400 },
+];
 
-  const selectedPlanObj = plans.find((p) => p.id === plan);
-  const planPrice = selectedPlanObj ? selectedPlanObj.price : 0;
-  const extraPrice = (bottle ? 200 : 0) + (shoes ? 600 : 0) + (cap ? 400 : 0);
-  const subtotal = planPrice + extraPrice;
-  const allExtrasSelected = bottle && shoes && cap;
-  const total = allExtrasSelected ? subtotal * 0.8 : subtotal;
+export default function ModalRegister({ onClose }: { onClose: () => void }) {
+  const [form, setForm] = useState<RegisterForm>({
+    fname: "",
+    lname: "",
+    plan: "",
+    gender: "",
+    extraItems: [],
+  });
 
-  const handleRegister = () => {
-    setShowErrors(true);
-    if (!firstName.trim() || !lastName.trim() || !plan || !gender) {
-      return;
-    }
+  const [agree, setAgree] = useState(false);
 
-    const newRegistrant = {
+  const [errors, setErrors] = useState({
+    fname: false,
+    lname: false,
+    plan: false,
+    gender: false,
+    extraItems: false,
+  });
+
+  const updateForm = (key: keyof RegisterForm, value: string) => {
+    setForm((prev) => ({ ...prev, [key]: value }));
+    setErrors((prev) => ({ ...prev, [key]: false }));
+  };
+
+  const computeTotalPayment = () => {
+    const selectedPlan = plans.find((p) => p.id === form.plan);
+
+    const selectedExtraItems = extraItems.filter((item) =>
+      form.extraItems.includes(item.id)
+    );
+
+    const subtotal =
+      (selectedPlan ? selectedPlan.price : 0) +
+      selectedExtraItems.reduce((sum, item) => sum + item.price, 0);
+
+    const hasAllItems = selectedExtraItems.length === extraItems.length;
+    const discount = hasAllItems ? subtotal * 0.2 : 0;
+
+    return subtotal - discount;
+  };
+
+  const registerBtnOnClick = () => {
+    const newErrors = {
+      fname: form.fname === "",
+      lname: form.lname === "",
+      plan: form.plan === "",
+      gender: form.gender === "",
+      extraItems: false,
+    };
+
+    setErrors(newErrors);
+
+    const hasError = Object.values(newErrors).some((isError) => isError);
+    if (hasError) return;
+
+    const total = computeTotalPayment();
+    const stored = JSON.parse(localStorage.getItem("marathon-registrants") ?? "[]");
+
+    const nextRegistrant: Registrant = {
       id: Date.now(),
-      fullName: `${firstName.trim()} ${lastName.trim()}`,
-      gender,
-      plan: selectedPlanObj ? selectedPlanObj.label : "",
-      extraItems: { bottle, shoes, cap },
+      fullName: `${form.fname} ${form.lname}`.trim(),
+      gender: form.gender,
+      plan: plans.find((p) => p.id === form.plan)?.label ?? form.plan,
       total,
     };
 
-    const existingData = JSON.parse(localStorage.getItem("registrants") || "[]");
-    localStorage.setItem("registrants", JSON.stringify([...existingData, newRegistrant]));
+    localStorage.setItem(
+      "marathon-registrants",
+      JSON.stringify([...stored, nextRegistrant]),
+    );
 
-    alert(`Registration complete. Please pay money for ${total.toLocaleString()} THB.`);
-
-    setFirstName("");
-    setLastName("");
-    setPlan("");
-    setGender("");
-    setBottle(false);
-    setShoes(false);
-    setCap(false);
-    setAgreed(false);
-    setShowErrors(false);
+    alert(
+      `Registration complete. Please pay money for ${total.toLocaleString()} THB.`,
+    );
+    onClose();
   };
 
   return (
-    <div
-      className="modal fade"
-      id="modalregister"
-      data-bs-backdrop="static"
-      data-bs-keyboard="false"
-      tabIndex={-1}
-      aria-labelledby="modalregisterLabel"
-      aria-hidden="true"
-    >
+    <>
+      <div className="modal-backdrop fade show" onClick={onClose} />
+      <div
+        className="modal fade show d-block"
+        id="modalregister"
+        data-bs-backdrop="static"
+        data-bs-keyboard="false"
+        tabIndex={-1}
+        aria-labelledby="modalregisterLabel"
+        aria-hidden="true"
+        role="dialog"
+        aria-modal="true"
+      >
       <div className="modal-dialog">
         <div className="modal-content">
           <div className="modal-header">
             <h5 className="modal-title">Register CMU Marathon 🏃‍♂️</h5>
-            <button
-              type="button"
-              className="btn-close"
-              data-bs-dismiss="modal"
-              aria-label="Close"
-            ></button>
+            <button type="button" className="btn-close" onClick={onClose}></button>
           </div>
 
           <div className="modal-body">
             <div className="d-flex gap-2">
-              <div className="flex-grow-1">
+              <div>
                 <label className="form-label">First name</label>
-                <input
-                  className={`form-control ${
-                    showErrors && !firstName.trim() ? "is-invalid" : ""
-                  }`}
-                  value={firstName}
-                  onChange={(e) => setFirstName(e.target.value)}
-                />
-                {showErrors && !firstName.trim() && (
+
+                  <input
+                    className={`form-control ${errors.fname ? "is-invalid" : ""}`}
+                    onChange={(e) => updateForm("fname", e.target.value)}
+                    value={form.fname}
+                  />
                   <div className="invalid-feedback">Invalid first name</div>
-                )}
               </div>
-              <div className="flex-grow-1">
+              <div>
                 <label className="form-label">Last name</label>
-                <input
-                  className={`form-control ${
-                    showErrors && !lastName.trim() ? "is-invalid" : ""
-                  }`}
-                  value={lastName}
-                  onChange={(e) => setLastName(e.target.value)}
-                />
-                {showErrors && !lastName.trim() && (
+                 <input
+                    className={`form-control ${errors.lname ? "is-invalid" : ""}`}
+                    onChange={(e) => updateForm("lname", e.target.value)}
+                    value={form.lname}
+                  />
                   <div className="invalid-feedback">Invalid last name</div>
-                )}
               </div>
             </div>
 
             <div className="mt-2">
               <label className="form-label">Plan</label>
               <select
-                className={`form-select ${
-                  showErrors && !plan ? "is-invalid" : ""
-                }`}
-                value={plan}
-                onChange={(e) => setPlan(e.target.value)}
+                className={`form-select ${errors.plan ? "is-invalid" : ""}`}
+                value={form.plan}
+                onChange={(e) => updateForm("plan", e.target.value)}
               >
                 <option value="">Please select..</option>
-                <option value="funrun">Fun run 5.5 Km (500 THB)</option>
-                <option value="mini">Mini Marathon 10 Km (800 THB)</option>
-                <option value="half">Half Marathon 21 Km (1,200 THB)</option>
-                <option value="full">
-                  Full Marathon 42.195 Km (1,500 THB)
-                </option>
+                {plans.map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {p.label} ({p.price.toLocaleString()} THB)
+                  </option>
+                ))}
               </select>
-              {showErrors && !plan && (
-                <div className="invalid-feedback">Please select a Plan</div>
+              {errors.plan && (
+                <div className="invalid-feedback d-block">Please select a Plan</div>
               )}
             </div>
 
             <div className="mt-2">
               <label className="form-label">Gender</label>
               <div>
+              <div>
                 <input
-                  className="me-2 form-check-input"
-                  type="radio"
-                  name="gender"
-                  checked={gender === "male"}
-                  onChange={() => setGender("male")}
-                />
-                Male 👨
-                <input
-                  className="mx-2 form-check-input"
-                  type="radio"
-                  name="gender"
-                  checked={gender === "female"}
-                  onChange={() => setGender("female")}
-                />
-                Female 👩
+                      className="me-2 form-check-input"
+                      type="radio"
+                      checked={form.gender === "male"}
+                      onChange={() => updateForm("gender", "male")}
+                    />
+                    Male 👨
+                    <input
+                      className="mx-2 form-check-input"
+                      type="radio"
+                      checked={form.gender === "female"}
+                      onChange={() => updateForm("gender", "female")}
+                    />
+                    Female 👩
               </div>
-              {showErrors && !gender && (
-                <div className="text-danger small mt-1">Please select gender</div>
-              )}
+              {errors.gender && <div className="text-danger mt-1">Please select gender</div>}      
+              </div>
             </div>
-
+            {/* Extra Items */}
             <div className="mt-2">
               <label className="form-label">Extra Item(s)</label>
-              <div>
-                <input
-                  className="me-2 form-check-input"
-                  type="checkbox"
-                  checked={bottle}
-                  onChange={(e) => setBottle(e.target.checked)}
-                />
-                <label className="form-check-label">Bottle 🍼 (200 THB)</label>
-              </div>
-              <div>
-                <input
-                  className="me-2 form-check-input"
-                  type="checkbox"
-                  checked={shoes}
-                  onChange={(e) => setShoes(e.target.checked)}
-                />
-                <label className="form-check-label">Shoes 👟 (600 THB)</label>
-              </div>
-              <div>
-                <input
-                  className="me-2 form-check-input"
-                  type="checkbox"
-                  checked={cap}
-                  onChange={(e) => setCap(e.target.checked)}
-                />
-                <label className="form-check-label">Cap 🧢 (400 THB)</label>
-              </div>
-              {allExtrasSelected && (
+              {extraItems.map((item) => (
+                <div key={item.id}>
+                  <input
+                    className="me-2 form-check-input"
+                    type="checkbox"
+                    checked={form.extraItems.includes(item.id)}
+                    onChange={(e) => {
+                      const checked = e.target.checked;
+                      setForm((prev) => ({
+                        ...prev,
+                        extraItems: checked
+                          ? [...prev.extraItems, item.id]
+                          : prev.extraItems.filter((id) => id !== item.id),
+                      }));
+                    }}
+                  />
+                  <label className="form-check-label">
+                    {item.label} ({item.price.toLocaleString()} THB)
+                  </label>
+                </div>
+              ))}
+              {form.extraItems.length === extraItems.length && (
                 <span className="text-success d-block">(20% Discounted)</span>
               )}
             </div>
@@ -193,29 +219,30 @@ export default function ModalRegister() {
               Promotion📢 Buy all items to get 20% Discount
             </div>
 
-            <div className="fw-bold">Total Payment : {total.toLocaleString()} THB</div>
+            <div className="mt-3">
+                Total Payment : {computeTotalPayment().toLocaleString()} THB
+              </div>
           </div>
 
           <div className="modal-footer">
-            <div>
-              <input
-                className="me-2 form-check-input"
-                type="checkbox"
-                checked={agreed}
-                onChange={(e) => setAgreed(e.target.checked)}
-              />
-              I agree to the terms and conditions
+            <div className="form-check">
+              <label>
+                <input
+                  className="me-2 form-check-input"
+                  type="checkbox"
+                  checked={agree}
+                  onChange={() => setAgree((prev) => !prev)}
+                />
+                I agree to the terms and conditions
+              </label>
             </div>
-            <button
-              className="btn btn-success my-2"
-              disabled={!agreed}
-              onClick={handleRegister}
-            >
+            <button className="btn btn-success my-2" onClick={registerBtnOnClick} disabled={!agree}>
               Register
             </button>
           </div>
         </div>
       </div>
     </div>
+    </>
   );
 }
