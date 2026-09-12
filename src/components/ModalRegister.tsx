@@ -1,6 +1,5 @@
 import { useState } from "react";
 
-// ---- แผนการวิ่ง ----
 const plans = [
   { id: "funrun", label: "Fun run 5.5 Km", price: 500 },
   { id: "mini", label: "Mini Marathon 10 Km", price: 800 },
@@ -17,16 +16,11 @@ export default function ModalRegister() {
   const [shoes, setShoes] = useState(false);
   const [cap, setCap] = useState(false);
   const [agreed, setAgreed] = useState(false);
-
   const [showErrors, setShowErrors] = useState(false);
 
-  // Calculate prices
   const selectedPlanObj = plans.find((p) => p.id === plan);
   const planPrice = selectedPlanObj ? selectedPlanObj.price : 0;
-  
-  const extraPrice =
-    (bottle ? 200 : 0) + (shoes ? 600 : 0) + (cap ? 400 : 0);
-
+  const extraPrice = (bottle ? 200 : 0) + (shoes ? 600 : 0) + (cap ? 400 : 0);
   const subtotal = planPrice + extraPrice;
   const allExtrasSelected = bottle && shoes && cap;
   const total = allExtrasSelected ? subtotal * 0.8 : subtotal;
@@ -51,7 +45,6 @@ export default function ModalRegister() {
 
     alert(`Registration complete. Please pay money for ${total.toLocaleString()} THB.`);
 
-    // Reset form
     setFirstName("");
     setLastName("");
     setPlan("");
@@ -94,9 +87,7 @@ export default function ModalRegister() {
                     showErrors && !firstName.trim() ? "is-invalid" : ""
                   }`}
                   value={firstName}
-                  onChange={(e) => {
-                    setFirstName(e.target.value);
-                  }}
+                  onChange={(e) => setFirstName(e.target.value)}
                 />
                 {showErrors && !firstName.trim() && (
                   <div className="invalid-feedback">Invalid first name</div>
@@ -109,9 +100,7 @@ export default function ModalRegister() {
                     showErrors && !lastName.trim() ? "is-invalid" : ""
                   }`}
                   value={lastName}
-                  onChange={(e) => {
-                    setLastName(e.target.value);
-                  }}
+                  onChange={(e) => setLastName(e.target.value)}
                 />
                 {showErrors && !lastName.trim() && (
                   <div className="invalid-feedback">Invalid last name</div>
@@ -126,9 +115,7 @@ export default function ModalRegister() {
                   showErrors && !plan ? "is-invalid" : ""
                 }`}
                 value={plan}
-                onChange={(e) => {
-                  setPlan(e.target.value);
-                }}
+                onChange={(e) => setPlan(e.target.value)}
               >
                 <option value="">Please select..</option>
                 <option value="funrun">Fun run 5.5 Km (500 THB)</option>
@@ -168,7 +155,6 @@ export default function ModalRegister() {
               )}
             </div>
 
-            {/* Extra Items */}
             <div className="mt-2">
               <label className="form-label">Extra Item(s)</label>
               <div>
