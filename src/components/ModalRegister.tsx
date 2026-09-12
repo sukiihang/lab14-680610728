@@ -9,7 +9,7 @@ type RegisterForm = {
   extraItems: string[];
 };
 
-//---- แผนการวิ่ง ----
+// ---- แผนการวิ่ง ----
 const plans = [
   { id: "funrun", label: "Fun run 5.5 Km", price: 500 },
   { id: "mini", label: "Mini Marathon 10 Km", price: 800 },
@@ -24,7 +24,7 @@ const extraItems = [
   { id: "cap", label: "Cap 🧢", price: 400 },
 ];
 
-export default function ModalRegister({ onClose }: { onClose: () => void }) {
+export default function ModalRegister() {
   const [form, setForm] = useState<RegisterForm>({
     fname: "",
     lname: "",
@@ -40,7 +40,6 @@ export default function ModalRegister({ onClose }: { onClose: () => void }) {
     lname: false,
     plan: false,
     gender: false,
-    extraItems: false,
   });
 
   const updateForm = (key: keyof RegisterForm, value: string) => {
@@ -67,11 +66,10 @@ export default function ModalRegister({ onClose }: { onClose: () => void }) {
 
   const registerBtnOnClick = () => {
     const newErrors = {
-      fname: form.fname === "",
-      lname: form.lname === "",
+      fname: form.fname.trim() === "",
+      lname: form.lname.trim() === "",
       plan: form.plan === "",
       gender: form.gender === "",
-      extraItems: false,
     };
 
     setErrors(newErrors);
@@ -80,68 +78,80 @@ export default function ModalRegister({ onClose }: { onClose: () => void }) {
     if (hasError) return;
 
     const total = computeTotalPayment();
-    const stored = JSON.parse(localStorage.getItem("marathon-registrants") ?? "[]");
+    const stored = JSON.parse(
+      localStorage.getItem("marathon-registrants") ?? "[]"
+    );
 
     const nextRegistrant: Registrant = {
       id: Date.now(),
-      fullName: `${form.fname} ${form.lname}`.trim(),
+      fullName: `${form.fname.trim()} ${form.lname.trim()}`,
       gender: form.gender,
       plan: plans.find((p) => p.id === form.plan)?.label ?? form.plan,
+      extraItems: form.extraItems,
       total,
-    };
+    } as any;
 
     localStorage.setItem(
       "marathon-registrants",
-      JSON.stringify([...stored, nextRegistrant]),
+      JSON.stringify([...stored, nextRegistrant])
     );
 
     alert(
-      `Registration complete. Please pay money for ${total.toLocaleString()} THB.`,
+      `Registration complete. Please pay money for ${total.toLocaleString()} THB.`
     );
-    onClose();
+
+    // Reset form
+    setForm({
+      fname: "",
+      lname: "",
+      plan: "",
+      gender: "",
+      extraItems: [],
+    });
+    setAgree(false);
   };
 
   return (
-    <>
-      <div className="modal-backdrop fade show" onClick={onClose} />
-      <div
-        className="modal fade show d-block"
-        id="modalregister"
-        data-bs-backdrop="static"
-        data-bs-keyboard="false"
-        tabIndex={-1}
-        aria-labelledby="modalregisterLabel"
-        aria-hidden="true"
-        role="dialog"
-        aria-modal="true"
-      >
+    <div
+      className="modal fade"
+      id="modalregister"
+      data-bs-backdrop="static"
+      data-bs-keyboard="false"
+      tabIndex={-1}
+      aria-labelledby="modalregisterLabel"
+      aria-hidden="true"
+    >
       <div className="modal-dialog">
         <div className="modal-content">
           <div className="modal-header">
             <h5 className="modal-title">Register CMU Marathon 🏃‍♂️</h5>
-            <button type="button" className="btn-close" onClick={onClose}></button>
+            <button
+              type="button"
+              className="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
           </div>
 
           <div className="modal-body">
             <div className="d-flex gap-2">
-              <div>
+              <div className="flex-grow-1">
                 <label className="form-label">First name</label>
-
-                  <input
-                    className={`form-control ${errors.fname ? "is-invalid" : ""}`}
-                    onChange={(e) => updateForm("fname", e.target.value)}
-                    value={form.fname}
-                  />
-                  <div className="invalid-feedback">Invalid first name</div>
+                <input
+                  className={`form-control ${errors.fname ? "is-invalid" : ""}`}
+                  onChange={(e) => updateForm("fname", e.target.value)}
+                  value={form.fname}
+                />
+                <div className="invalid-feedback">Invalid first name</div>
               </div>
-              <div>
+              <div className="flex-grow-1">
                 <label className="form-label">Last name</label>
-                 <input
-                    className={`form-control ${errors.lname ? "is-invalid" : ""}`}
-                    onChange={(e) => updateForm("lname", e.target.value)}
-                    value={form.lname}
-                  />
-                  <div className="invalid-feedback">Invalid last name</div>
+                <input
+                  className={`form-control ${errors.lname ? "is-invalid" : ""}`}
+                  onChange={(e) => updateForm("lname", e.target.value)}
+                  value={form.lname}
+                />
+                <div className="invalid-feedback">Invalid last name</div>
               </div>
             </div>
 
@@ -160,32 +170,41 @@ export default function ModalRegister({ onClose }: { onClose: () => void }) {
                 ))}
               </select>
               {errors.plan && (
-                <div className="invalid-feedback d-block">Please select a Plan</div>
+                <div className="invalid-feedback d-block">
+                  Please select a Plan
+                </div>
               )}
             </div>
 
             <div className="mt-2">
               <label className="form-label">Gender</label>
               <div>
-              <div>
-                <input
-                      className="me-2 form-check-input"
-                      type="radio"
-                      checked={form.gender === "male"}
-                      onChange={() => updateForm("gender", "male")}
-                    />
-                    Male 👨
-                    <input
-                      className="mx-2 form-check-input"
-                      type="radio"
-                      checked={form.gender === "female"}
-                      onChange={() => updateForm("gender", "female")}
-                    />
-                    Female 👩
-              </div>
-              {errors.gender && <div className="text-danger mt-1">Please select gender</div>}      
+                <div>
+                  <input
+                    className="me-2 form-check-input"
+                    type="radio"
+                    name="gender"
+                    checked={form.gender === "male"}
+                    onChange={() => updateForm("gender", "male")}
+                  />
+                  Male 👨
+                  <input
+                    className="mx-2 form-check-input"
+                    type="radio"
+                    name="gender"
+                    checked={form.gender === "female"}
+                    onChange={() => updateForm("gender", "female")}
+                  />
+                  Female 👩
+                </div>
+                {errors.gender && (
+                  <div className="text-danger small mt-1">
+                    Please select gender
+                  </div>
+                )}
               </div>
             </div>
+
             {/* Extra Items */}
             <div className="mt-2">
               <label className="form-label">Extra Item(s)</label>
@@ -219,9 +238,9 @@ export default function ModalRegister({ onClose }: { onClose: () => void }) {
               Promotion📢 Buy all items to get 20% Discount
             </div>
 
-            <div className="mt-3">
-                Total Payment : {computeTotalPayment().toLocaleString()} THB
-              </div>
+            <div className="mt-3 fw-bold">
+              Total Payment : {computeTotalPayment().toLocaleString()} THB
+            </div>
           </div>
 
           <div className="modal-footer">
@@ -236,13 +255,16 @@ export default function ModalRegister({ onClose }: { onClose: () => void }) {
                 I agree to the terms and conditions
               </label>
             </div>
-            <button className="btn btn-success my-2" onClick={registerBtnOnClick} disabled={!agree}>
+            <button
+              className="btn btn-success my-2"
+              onClick={registerBtnOnClick}
+              disabled={!agree}
+            >
               Register
             </button>
           </div>
         </div>
       </div>
     </div>
-    </>
   );
 }
