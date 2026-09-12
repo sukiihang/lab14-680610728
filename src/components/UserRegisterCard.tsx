@@ -6,7 +6,7 @@ interface UserRegisterCardProps {
 
 export default function UserRegisterCard({ registrant }: UserRegisterCardProps) {
   const genderDisplay =
-    registrant.gender === "male" ? "👨 Male" : "👩 Female"; //[cite: 1]
+    registrant.gender === "male" ? "👨 Male" : "👩 Female";
 
   return (
     <div className="card p-3 mb-3 shadow-sm">
@@ -17,9 +17,9 @@ export default function UserRegisterCard({ registrant }: UserRegisterCardProps) 
             {registrant.plan} &nbsp; {genderDisplay}
           </div>
           <div className="d-flex gap-3 small">
-            {registrant.extraItems?.bottle && <span>Bottle 🍼</span>}
-            {registrant.extraItems?.shoes && <span>Shoes 👟</span>}
-            {registrant.extraItems?.cap && <span>Cap 🧢</span>}
+            {registrant.extraItems?.includes("bottle") && <span>Bottle 🍼</span>}
+            {registrant.extraItems?.includes("shoes") && <span>Shoes 👟</span>}
+            {registrant.extraItems?.includes("cap") && <span>Cap 🧢</span>}
           </div>
         </div>
         <div className="fw-bold fs-5 text-primary">
