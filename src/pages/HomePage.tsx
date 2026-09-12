@@ -1,8 +1,10 @@
+import ModalRegister from "../components/ModalRegister";
+
 export default function HomePage() {
   return (
     <div className="col-12 mt-4 p-0">
       <div className="container text-center">
-        <h2> Wellcome To CMU Marathon</h2>
+        <h2>Welcome To CMU Marathon</h2>
         <div>
           <img src="/marathonrun.png" alt="Logo CMU Marathon" />
         </div>
@@ -15,6 +17,8 @@ export default function HomePage() {
           Register
         </button>
       </div>
+      {/* ต้องเรียกใช้งาน ModalRegister ตรงนี้เพื่อให้ HTML ของ Modal ถูกเรนเดอร์ขึ้นมา */}
+      <ModalRegister />
     </div>
   );
 }
