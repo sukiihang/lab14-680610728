@@ -142,7 +142,11 @@ export default function ModalRegister() {
                   onChange={(e) => updateForm("fname", e.target.value)}
                   value={form.fname}
                 />
-                <div className="invalid-feedback">Invalid first name</div>
+                {errors.fname && (
+                  <div className="invalid-feedback d-block">
+                    Invalid first name
+                  </div>
+                )}
               </div>
               <div className="flex-grow-1">
                 <label className="form-label">Last name</label>
@@ -151,7 +155,11 @@ export default function ModalRegister() {
                   onChange={(e) => updateForm("lname", e.target.value)}
                   value={form.lname}
                 />
-                <div className="invalid-feedback">Invalid last name</div>
+                {errors.lname && (
+                  <div className="invalid-feedback d-block">
+                    Invalid last name
+                  </div>
+                )}
               </div>
             </div>
 
@@ -198,7 +206,7 @@ export default function ModalRegister() {
                   Female 👩
                 </div>
                 {errors.gender && (
-                  <div className="text-danger small mt-1">
+                  <div className="text-danger small mt-1 d-block">
                     Please select gender
                   </div>
                 )}
