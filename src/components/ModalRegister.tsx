@@ -8,13 +8,6 @@ const plans = [
   { id: "full", label: "Full Marathon 42.195 Km", price: 1500 },
 ];
 
-// ---- สินค้าเสริม ----
-const extraItems = [
-  { id: "bottle", label: "Bottle 🍼", price: 200 },
-  { id: "shoes", label: "Shoes 👟", price: 600 },
-  { id: "cap", label: "Cap 🧢", price: 400 },
-];
-
 export default function ModalRegister() {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -25,15 +18,9 @@ export default function ModalRegister() {
   const [cap, setCap] = useState(false);
   const [agreed, setAgreed] = useState(false);
 
-  const [touched, setTouched] = useState({
-    firstName: false,
-    lastName: false,
-    plan: false,
-    gender: false,
-  });
-
   const [showErrors, setShowErrors] = useState(false);
 
+  // Calculate prices
   const selectedPlanObj = plans.find((p) => p.id === plan);
   const planPrice = selectedPlanObj ? selectedPlanObj.price : 0;
   
@@ -62,7 +49,7 @@ export default function ModalRegister() {
     const existingData = JSON.parse(localStorage.getItem("registrants") || "[]");
     localStorage.setItem("registrants", JSON.stringify([...existingData, newRegistrant]));
 
-    alert(`Registration complete. Please pay money for ${total.toLocaleString()} THB.`); //[cite: 1]
+    alert(`Registration complete. Please pay money for ${total.toLocaleString()} THB.`);
 
     // Reset form
     setFirstName("");
@@ -112,7 +99,7 @@ export default function ModalRegister() {
                   }}
                 />
                 {showErrors && !firstName.trim() && (
-                  <div className="invalid-feedback">Invalid first name</div> //[cite: 1]
+                  <div className="invalid-feedback">Invalid first name</div>
                 )}
               </div>
               <div className="flex-grow-1">
@@ -127,7 +114,7 @@ export default function ModalRegister() {
                   }}
                 />
                 {showErrors && !lastName.trim() && (
-                  <div className="invalid-feedback">Invalid last name</div> //[cite: 1]
+                  <div className="invalid-feedback">Invalid last name</div>
                 )}
               </div>
             </div>
@@ -177,7 +164,7 @@ export default function ModalRegister() {
                 Female 👩
               </div>
               {showErrors && !gender && (
-                <div className="text-danger small mt-1">Please select gender</div> //[cite: 1]
+                <div className="text-danger small mt-1">Please select gender</div>
               )}
             </div>
 
@@ -212,7 +199,7 @@ export default function ModalRegister() {
                 <label className="form-check-label">Cap 🧢 (400 THB)</label>
               </div>
               {allExtrasSelected && (
-                <span className="text-success d-block">(20% Discounted)</span> //[cite: 1]
+                <span className="text-success d-block">(20% Discounted)</span>
               )}
             </div>
 
@@ -235,7 +222,7 @@ export default function ModalRegister() {
             </div>
             <button
               className="btn btn-success my-2"
-              disabled={!agreed} //[cite: 1]
+              disabled={!agreed}
               onClick={handleRegister}
             >
               Register
