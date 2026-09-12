@@ -17,7 +17,6 @@ export default function HomePage() {
           Register
         </button>
       </div>
-      {/* ต้องเรียกใช้งาน ModalRegister ตรงนี้เพื่อให้ HTML ของ Modal ถูกเรนเดอร์ขึ้นมา */}
       <ModalRegister />
     </div>
   );
